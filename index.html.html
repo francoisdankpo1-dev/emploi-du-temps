@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Emploi du Temps personelle Interactif</title>
+    <style>
+        /* Importation d'une police moderne */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            /* Arrière-plan cool avec image esthétique + dégradé sombre pour la lisibilité */
+            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.8)), 
+                        url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #ffffff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        header p {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        /* Panneau de contrôle (Formulaire) avec effet Glassmorphism */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: #e2e8f0;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(15, 23, 42, 0.6);
+            color: black;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #38bdf8;
+        }
+
+        input[type="color"] {
+            padding: 2px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            height: 40px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            color: #0f172a;
+            flex: 2;
+        }
+
+        .btn-clear {
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            flex: 1;
+        }
+
+        /* Tableau de l'emploi du temps */
+        .schedule-container {
+            width: 100%;
+            max-width: 1200px;
+            overflow-x: auto;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th, td {
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.7);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: #38bdf8;
+        }
+
+        .time-col {
+            width: 110px;
+            font-weight: 600;
+            background: rgba(15, 23, 42, 0.5);
+            vertical-align: middle;
+        }
+
+        td.slot {
+            height: 85px;
+            width: 14%;
+            transition: background 0.2s;
+        }
+
+        td.slot:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Carte d'un cours */
+        .course-card {
+            padding: 8px 10px;
+            border-radius: 8px;
+            color: #ffffff;
+            text-align: left;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin-bottom: 5px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .course-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+            padding-right: 15px;
+        }
+
+        .course-card p {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 7px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            cursor: pointer;
+            height: auto;
+            padding: 0;
+        }
+
+        .delete-btn:hover {
+            color: #ffffff;
+            transform: scale(1.2);
+        }
+        
+        /* Sélecteur de fond d'écran */
+        .bg-switcher {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        
+        .bg-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 5px 12px;
+            height: auto;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📅 Mon Emploi du Temps</h1>
+        <h2>bien réglémenter son temps c'est reussir</h2>
+        <p>Ajoutez, organisez et personnalisez vos cours facilement avec macall dev </p>
+        <div class="bg-switcher">
+            <span>Changer l'ambiance :</span>
+            <button class="bg-btn" onclick="changeBg('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80')">Montagne Nuit</button>
+            <button class="bg-btn" onclick="changeBg('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1920&q=80')">Bibliothèque</button>
+            <button class="bg-btn" onclick="changeBg('https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=1920&q=80')">Abstrait Néon</button>
+        </div>
+    </header>
+
+    <!-- Formulaire d'ajout de cours -->
+    <div class="control-panel">
+        <form id="courseForm" class="form-grid">
+            <div class="form-group">
+                <label for="day">Jour</label>
+                <select id="day" required>
+                    <option value="Lundi">Lundi</option>
+                    <option value="Mardi">Mardi</option>
+                    <option value="Mercredi">Mercredi</option>
+                    <option value="Jeudi">Jeudi</option>
+                    <option value="Vendredi">Vendredi</option>
+                    <option value="Samedi">Samedi</option>
+                    <option value="Dimanche">Dimanche</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="time">Créneau horaire</label>
+                <select id="time" required>
+                    <option value="08:00 - 10:00">08:00 - 10:00</option>
+                    <option value="10:00 - 12:00">10:00 - 12:00</option>
+                    <option value="12:00 - 14:00">12:00 - 14:00</option>
+                    <option value="14:00 - 16:00">14:00 - 16:00</option>
+                    <option value="16:00 - 18:00">16:00 - 18:00</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Matière / Cours</label>
+                <input type="text" id="subject" placeholder="Ex: Mathématiques" required>
+            </div>
+
+            <div class="form-group">
+                <label for="details">Salle / Professeur</label>
+                <input type="text" id="details" placeholder="Ex: Salle B12 - M. Dupont">
+            </div>
+
+            <div class="form-group">
+                <label for="color">Couleur</label>
+                <input type="color" id="color" value="#2563eb">
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn-add">+ Ajouter</button>
+                <button type="button" class="btn-clear" onclick="clearSchedule()">Tout vider</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Grille de l'emploi du temps -->
+    <div class="schedule-container">
+        <table id="scheduleTable">
+            <thead>
+                <tr>
+                    <th>Horaires</th>
+                    <th>Lundi</th>
+                    <th>Mardi</th>
+                    <th>Mercredi</th>
+                    <th>Jeudi</th>
+                    <th>Vendredi</th>
+                    <th>Samedi</th>
+                    <th>dimanche</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody">
+                <!-- Généré dynamiquement par JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi","Dimanche"];
+        const times = ["08:00 - 10:00", "10:00 - 12:00", "12:00 - 14:00", "14:00 - 16:00", "16:00 - 18:00"];
+        
+        // Charger les cours sauvegardés ou initialiser un tableau vide
+        let courses = JSON.parse(localStorage.getItem('mySchedule')) || [];
+
+        const scheduleBody = document.getElementById('scheduleBody');
+        const courseForm = document.getElementById('courseForm');
+
+        // Construire la grille vide
+        function renderGrid() {
+            scheduleBody.innerHTML = '';
+
+            times.forEach(time => {
+                const row = document.createElement('tr');
+                
+                // Colonne des heures
+                const timeCell = document.createElement('td');
+                timeCell.className = 'time-col';
+                timeCell.textContent = time;
+                row.appendChild(timeCell);
+
+                // Colonnes des jours
+                days.forEach(day => {
+                    const cell = document.createElement('td');
+                    cell.className = 'slot';
+                    cell.dataset.day = day;
+                    cell.dataset.time = time;
+
+                    // Filtrer les cours correspondant à ce jour et cette heure
+                    const cellCourses = courses.filter(c => c.day === day && c.time === time);
+                    
+                    cellCourses.forEach(course => {
+                        const card = document.createElement('div');
+                        card.className = 'course-card';
+                        card.style.backgroundColor = course.color;
+                        card.innerHTML = `
+                            <button class="delete-btn" onclick="deleteCourse(${course.id})" title="Supprimer">×</button>
+                            <h4>${course.subject}</h4>
+                            <p>${course.details}</p>
+                        `;
+                        cell.appendChild(card);
+                    });
+
+                    row.appendChild(cell);
+                });
+
+                scheduleBody.appendChild(row);
+            });
+        }
+
+        // Ajouter un cours
+        courseForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const newCourse = {
+                id: Date.now(),
+                day: document.getElementById('day').value,
+                time: document.getElementById('time').value,
+                subject: document.getElementById('subject').value,
+                details: document.getElementById('details').value,
+                color: document.getElementById('color').value
+            };
+
+            courses.push(newCourse);
+            saveAndRender();
+            
+            // Réinitialiser les champs texte
+            document.getElementById('subject').value = '';
+            document.getElementById('details').value = '';
+        });
+
+        // Supprimer un cours spécifique
+        function deleteCourse(id) {
+            courses = courses.filter(course => course.id !== id);
+            saveAndRender();
+        }
+
+        // Vider tout l'emploi du temps
+        function clearSchedule() {
+            if(confirm("Voulez-vous vraiment supprimer tous vos cours ?")) {
+                courses = [];
+                saveAndRender();
+            }
+        }
+
+        // Sauvegarder dans le navigateur et rafraîchir l'affichage
+        function saveAndRender() {
+            localStorage.setItem('mySchedule', JSON.stringify(courses));
+            renderGrid();
+        }
+
+        // Changer l'image d'arrière-plan
+        function changeBg(imageUrl) {
+            document.body.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.8)), url('${imageUrl}')`;
+        }
+
+        // Initialisation au chargement de la page
+        renderGrid();
+    </script>
+</body>
+</html>
